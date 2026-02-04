@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: bcv-proxy
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: CACHE_TTL_SECONDS
+        value: "7200"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "60000"
+      - key: RATE_LIMIT_MAX
+        value: "60"
