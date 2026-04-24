@@ -49,6 +49,14 @@ function extractUsdRate(html) {
   return match ? match[1] : null;
 }
 
+function extractEurRate(html) {
+  if (!html) return null;
+  const match = html.match(
+    /<div[^>]*id=["']euro["'][\s\S]*?<strong>\s*([0-9.,]+)\s*<\/strong>/i
+  );
+  return match ? match[1] : null;
+}
+
 function extractBcvDate(html) {
   if (!html) return null;
   const spanMatch = html.match(
@@ -115,11 +123,13 @@ app.get(["/", "/rate"], async (req, res) => {
   try {
     const html = await fetchBcvHtml();
     const rawRate = extractUsdRate(html);
+    const rawEurRate = extractEurRate(html);
     if (!rawRate) {
       return res.status(502).json({ error: "rate_not_found" });
     }
 
     const numericRate = normalizeBcvNumber(rawRate);
+    const numericEurRate = extractEurRate ? normalizeBcvNumber(rawEurRate) : 0;
     if (numericRate === null) {
       return res.status(502).json({ error: "rate_invalid" });
     }
@@ -136,7 +146,7 @@ app.get(["/", "/rate"], async (req, res) => {
     const payload = {
       current: {
         usd: numericRate,
-        eur: null,
+        eur: numericEurRate,
         date: parsedDate || new Date().toISOString().slice(0, 10),
       },
     };
