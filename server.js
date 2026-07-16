@@ -43,8 +43,9 @@ function normalizeBcvNumber(value) {
 
 function extractUsdRate(html) {
   if (!html) return null;
+  // ponytail: BCV wraps rate in <strong class="strong-tb">; [^>]* tolerates attrs
   const match = html.match(
-    /<div[^>]*id=["']dolar["'][\s\S]*?<strong>\s*([0-9.,]+)\s*<\/strong>/i
+    /<div[^>]*id=["']dolar["'][\s\S]*?<strong[^>]*>\s*([0-9.,]+)\s*<\/strong>/i
   );
   return match ? match[1] : null;
 }
@@ -52,7 +53,7 @@ function extractUsdRate(html) {
 function extractEurRate(html) {
   if (!html) return null;
   const match = html.match(
-    /<div[^>]*id=["']euro["'][\s\S]*?<strong>\s*([0-9.,]+)\s*<\/strong>/i
+    /<div[^>]*id=["']euro["'][\s\S]*?<strong[^>]*>\s*([0-9.,]+)\s*<\/strong>/i
   );
   return match ? match[1] : null;
 }
@@ -125,13 +126,13 @@ app.get(["/", "/rate"], async (req, res) => {
     const rawRate = extractUsdRate(html);
     const rawEurRate = extractEurRate(html);
     if (!rawRate) {
-      return res.status(502).json({ error: "rate_not_found" });
+      return res.status(404).json({ error: "rate_not_found" });
     }
 
     const numericRate = normalizeBcvNumber(rawRate);
     const numericEurRate = extractEurRate ? normalizeBcvNumber(rawEurRate) : 0;
     if (numericRate === null) {
-      return res.status(502).json({ error: "rate_invalid" });
+      return res.status(400).json({ error: "rate_invalid" });
     }
 
     const dateContent = extractBcvDate(html);
