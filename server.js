@@ -136,11 +136,12 @@ app.get(["/", "/rate"], async (req, res) => {
     }
 
     const dateContent = extractBcvDate(html);
-    let parsedDate = null;
+    let valueDate = null;
     if (dateContent) {
       const parsed = new Date(dateContent);
       if (!Number.isNaN(parsed.getTime())) {
-        parsedDate = parsed.toISOString().slice(0, 10);
+        // ponytail: BCV content is local (-04:00); slice ISO can shift the calendar day in UTC
+        valueDate = dateContent.slice(0, 10);
       }
     }
 
@@ -148,7 +149,8 @@ app.get(["/", "/rate"], async (req, res) => {
       current: {
         usd: numericRate,
         eur: numericEurRate,
-        date: parsedDate || new Date().toISOString().slice(0, 10),
+        date: valueDate || new Date().toISOString().slice(0, 10),
+        valueDate,
       },
     };
 
