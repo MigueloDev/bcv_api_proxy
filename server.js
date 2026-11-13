@@ -19,10 +19,8 @@ const RATE_LIMIT_WINDOW_MS = Number(
 const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || DEFAULT_RATE_LIMIT_MAX);
 
 function parseAllowedDevices() {
-  console.log(!process.env.ALLOWED_DEVICES);
   if (!process.env.ALLOWED_DEVICES) return null;
   try {
-    console.log(JSON.parse(process.env.ALLOWED_DEVICES));
     const parsed = JSON.parse(process.env.ALLOWED_DEVICES);
     if (parsed && typeof parsed === "object") return parsed;
   } catch (error) {
@@ -111,6 +109,8 @@ app.get(["/", "/rate"], async (req, res) => {
   const deviceId = req.get("x-device-id");
   const apiKey = req.get("x-api-key");
   const expectedKey = deviceId ? allowedDevices[deviceId] : null;
+
+  console.log("Device Hitting", deviceId);
 
   if (!deviceId || !apiKey || !expectedKey || apiKey !== expectedKey) {
     return res.status(401).json({ error: "unauthorized" });
